@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>{% block title %}{{ seo_title or 'My Brand Blog' }}{% endblock %}</title>
+    <meta name="description" content="{{ seo_description or '轻量级个人博客与品牌展示站' }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<header class="site-header">
+    <div class="container nav">
+        <a class="brand" href="{{ url_for('home') }}">MyBrand</a>
+        <nav>
+            <a href="{{ url_for('home') }}">首页</a>
+            <a href="{{ url_for('blog_list') }}">博客</a>
+            <a href="{{ url_for('about') }}">About</a>
+            <a href="{{ url_for('contact') }}">Contact</a>
+            <a href="{{ url_for('admin_login') }}">后台</a>
+        </nav>
+    </div>
+</header>
+
+<main class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-wrap">
+        {% for category, msg in messages %}
+          <div class="flash flash-{{ category }}">{{ msg }}</div>
+        {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+</main>
+
+<footer class="site-footer">
+    <div class="container">© {{ now.year }} MyBrand. All rights reserved.</div>
+</footer>
+</body>
+</html>

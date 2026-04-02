@@ -1,0 +1,19 @@
+[Unit]
+Description=Gunicorn service for Flask Blog
+After=network.target
+
+[Service]
+User=www
+Group=www
+WorkingDirectory=/www/wwwroot/blog
+Environment="BLOG_DATA_DIR=/www/wwwdata/blog-data"
+Environment="BLOG_DB_PATH=/www/wwwdata/blog-data/blog.db"
+Environment="BLOG_UPLOAD_DIR=/www/wwwdata/blog-data/uploads"
+Environment="SECRET_KEY=change-this-in-production"
+EnvironmentFile=-/www/wwwroot/blog/.env
+ExecStart=/www/wwwroot/blog/venv/bin/gunicorn -w 2 -b 127.0.0.1:8000 app:app
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
