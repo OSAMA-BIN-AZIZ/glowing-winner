@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block title %}{{ post.title }} - MyBrand{% endblock %}
+{% block content %}
+<article class="post-detail">
+    <small>发布时间：{{ post.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+    <h1>{{ post.title }}</h1>
+    {% if post.cover_image %}
+    <img class="cover" src="{{ url_for('uploaded_file', filename=post.cover_image) }}" alt="{{ post.title }}">
+    {% endif %}
+    <div class="content">{{ post.content|safe }}</div>
+</article>
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block title %}博客列表 - MyBrand{% endblock %}
+{% block content %}
+<h1>博客列表</h1>
+<div class="grid">
+    {% for post in posts %}
+    <article class="card">
+        {% if post.cover_image %}
+        <img src="{{ url_for('uploaded_file', filename=post.cover_image) }}" alt="{{ post.title }}">
+        {% endif %}
+        <div class="card-body">
+            <small>发布时间：{{ post.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+            <h2><a href="{{ url_for('blog_detail', slug=post.slug) }}">{{ post.title }}</a></h2>
+            <p>{{ post.meta_description }}</p>
+        </div>
+    </article>
+    {% else %}
+    <p>还没有已发布文章。</p>
+    {% endfor %}
+</div>
+{% endblock %}

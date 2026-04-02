@@ -1,0 +1,12 @@
+:root{--bg:#f5f7fb;--card:#fff;--text:#1f2430;--muted:#6b7280;--primary:#0f172a;--line:#d9dee8}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.6}
+.container{max-width:980px;margin:0 auto;padding:0 20px}.site-header,.site-footer{background:#fff;border-bottom:1px solid var(--line)}.site-footer{border-top:1px solid var(--line);border-bottom:none;margin-top:40px;padding:18px 0;color:var(--muted)}
+.nav{display:flex;align-items:center;justify-content:space-between;height:64px}.nav nav a{margin-left:16px;color:var(--text);text-decoration:none}.brand{font-weight:700;text-decoration:none;color:var(--primary)}
+.hero{padding:60px 0 30px}.hero h1{font-size:38px;line-height:1.2;margin:0 0 10px}.hero p{max-width:640px;color:var(--muted)}
+.btn{display:inline-block;background:var(--primary);color:#fff;padding:10px 16px;border-radius:8px;text-decoration:none;border:none;cursor:pointer}.btn-secondary{background:#596275}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}.card{background:var(--card);border-radius:12px;overflow:hidden;box-shadow:0 8px 22px rgba(15,23,42,.08)}.card img{width:100%;height:180px;object-fit:cover}.card-body{padding:14px 16px}.card h2,.card h3{margin:8px 0}
+.post-detail{background:#fff;padding:24px;border-radius:12px}.post-detail .cover{width:100%;max-height:360px;object-fit:cover;border-radius:8px;margin:16px 0}
+.simple-page{background:#fff;padding:24px;border-radius:12px}.admin-box{background:#fff;padding:24px;border-radius:12px;max-width:760px}
+form{display:flex;flex-direction:column;gap:8px}input,textarea,select{padding:10px;border:1px solid var(--line);border-radius:8px;font:inherit}.preview{max-width:240px;border-radius:8px;margin:8px 0}
+.admin-head{display:flex;justify-content:space-between;align-items:center}table{width:100%;background:#fff;border-collapse:collapse;border-radius:12px;overflow:hidden}th,td{padding:10px;border-bottom:1px solid var(--line);text-align:left}.inline{display:inline}
+.flash-wrap{margin:12px 0}.flash{padding:10px;border-radius:8px;margin:6px 0}.flash-success{background:#e7f7ee}.flash-warning{background:#fff7e6}.flash-danger{background:#fdecec}.flash-info{background:#e9f2ff}

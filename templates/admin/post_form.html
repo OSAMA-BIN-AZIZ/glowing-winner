@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block title %}{{ '编辑文章' if post else '新建文章' }}{% endblock %}
+{% block content %}
+<section class="admin-box">
+    <h1>{{ '编辑文章' if post else '新建文章' }}</h1>
+    <form method="post" enctype="multipart/form-data">
+        <label>标题</label>
+        <input type="text" name="title" value="{{ post.title if post else '' }}" required>
+
+        <label>Slug</label>
+        <input type="text" name="slug" value="{{ post.slug if post else '' }}" placeholder="不填自动生成">
+
+        <label>Meta Description</label>
+        <input type="text" name="meta_description" value="{{ post.meta_description if post else '' }}" maxlength="255">
+
+        <label>封面图（jpg/jpeg/png/webp）</label>
+        <input type="file" name="cover_image" accept=".jpg,.jpeg,.png,.webp">
+        {% if post and post.cover_image %}
+        <img class="preview" src="{{ url_for('uploaded_file', filename=post.cover_image) }}" alt="cover">
+        {% endif %}
+
+        <label>正文（支持 HTML）</label>
+        <textarea name="content" rows="12" required>{{ post.content if post else '' }}</textarea>
+
+        <label>正文图片上传</label>
+        <input type="file" id="bodyImage" accept=".jpg,.jpeg,.png,.webp">
+        <button class="btn btn-secondary" type="button" onclick="uploadBodyImage()">上传并插入图片链接</button>
+
+        <label>状态</label>
+        <select name="status">
+            <option value="draft" {% if post and post.status == 'draft' %}selected{% endif %}>草稿</option>
+            <option value="published" {% if post and post.status == 'published' %}selected{% endif %}>已发布</option>
+        </select>
+
+        <button class="btn" type="submit">保存</button>
+        <a class="btn btn-secondary" href="{{ url_for('admin_dashboard') }}">返回</a>
+    </form>
+</section>
+<script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+{% endblock %}
