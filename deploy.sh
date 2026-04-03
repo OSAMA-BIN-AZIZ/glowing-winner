@@ -5,12 +5,16 @@ PROJECT_DIR="/www/wwwroot/glowing-winner"
 VENV_DIR="/www/wwwroot/glowing-winner/venv"
 BRANCH="main"
 SERVICE_NAME="glowing-winner"
-LOCK_FILE="/tmp/glowing-winner-deploy.lock"
+LOCK_DIR="/run/lock/glowing-winner"
+LOCK_FILE="$LOCK_DIR/deploy.lock"
 
 echo "========================================"
 echo "开始部署 glowing-winner"
 echo "时间: $(date '+%Y-%m-%d %H:%M:%S')"
 echo "========================================"
+
+umask 077
+install -d -m 700 "$LOCK_DIR"
 
 exec 9>"$LOCK_FILE"
 if ! flock -n 9; then

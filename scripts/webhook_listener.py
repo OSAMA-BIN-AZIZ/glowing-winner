@@ -4,6 +4,7 @@ import hmac
 import json
 import os
 import subprocess
+from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
 
@@ -11,6 +12,9 @@ HOST = "127.0.0.1"
 PORT = 9001
 DEPLOY_SCRIPT = "/www/wwwroot/glowing-winner/deploy.sh"
 WEBHOOK_SECRET = os.environ.get("GITHUB_WEBHOOK_SECRET", "")
+DEPLOY_LOG = os.environ.get(
+    "DEPLOY_LOG_PATH", "/www/wwwroot/glowing-winner/logs/webhook-deploy.log"
+)
 
 
 class GitHubWebhookHandler(BaseHTTPRequestHandler):
@@ -19,6 +23,22 @@ class GitHubWebhookHandler(BaseHTTPRequestHandler):
         self.send_header("Content-Type", "text/plain; charset=utf-8")
         self.end_headers()
         self.wfile.write(body.encode("utf-8"))
+
+    def _trigger_deploy_async(self) -> None:
+        log_dir = os.path.dirname(DEPLOY_LOG)
+        if log_dir:
+            os.makedirs(log_dir, exist_ok=True)
+        with open(DEPLOY_LOG, "a", encoding="utf-8") as log_file:
+            log_file.write(
+                f"\n[{datetime.now(timezone.utc).isoformat()}] webhook accepted, starting deploy\n"
+            )
+            log_file.flush()
+            subprocess.Popen(
+                [DEPLOY_SCRIPT],
+                stdout=log_file,
+                stderr=subprocess.STDOUT,
+                start_new_session=True,
+            )
 
     def do_POST(self) -> None:
         if self.path != "/github-webhook":
@@ -56,14 +76,13 @@ class GitHubWebhookHandler(BaseHTTPRequestHandler):
             self._send(200, "ignored: not main branch")
             return
 
-        result = subprocess.run(
-            [DEPLOY_SCRIPT], capture_output=True, text=True, check=False
-        )
-        if result.returncode != 0:
-            self._send(500, f"deploy failed\n{result.stdout}\n{result.stderr}")
+        try:
+            self._trigger_deploy_async()
+        except OSError as exc:
+            self._send(500, f"failed to queue deploy: {exc}")
             return
 
-        self._send(200, "deploy success")
+        self._send(202, "deploy queued")
 
     def log_message(self, fmt: str, *args) -> None:
         return
