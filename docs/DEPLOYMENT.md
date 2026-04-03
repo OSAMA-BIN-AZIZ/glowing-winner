@@ -82,8 +82,14 @@ sudo chmod -R 755 /www/wwwdata/glowing-winner-data
 cat > /www/wwwroot/glowing-winner/.env <<'ENVEOF'
 SECRET_KEY=请替换为高强度随机字符串
 BLOG_DATA_DIR=/www/wwwdata/glowing-winner-data
-BLOG_DB_PATH=/www/wwwdata/glowing-winner-data/blog.db
+BLOG_DB_NAME=blog.db
+# 或直接指定完整路径（优先级更高）
+# BLOG_DB_PATH=/www/wwwdata/glowing-winner-data/blog.db
 BLOG_UPLOAD_DIR=/www/wwwdata/glowing-winner-data/uploads
+
+# 管理员初始化默认变量（可选）
+BLOG_ADMIN_USERNAME=admin
+BLOG_ADMIN_PASSWORD=请替换为复杂强密码
 ENVEOF
 ```
 
@@ -110,6 +116,11 @@ flask --app app.py init-db
 # 初始化管理员（必须显式传入强密码）
 INIT_ADMIN_USERNAME=admin \
 INIT_ADMIN_PASSWORD='请替换为复杂强密码' \
+flask --app app.py init-admin
+
+# 或使用部署环境变量
+BLOG_ADMIN_USERNAME=admin \
+BLOG_ADMIN_PASSWORD='请替换为复杂强密码' \
 flask --app app.py init-admin
 ```
 
@@ -218,6 +229,21 @@ bash /www/wwwroot/glowing-winner/deploy.sh
 建议仅允许 `main` 分支触发，并在 webhook 层增加签名校验。
 
 ---
+
+### 8.4 自定义部署参数（可选）
+
+`deploy.sh` 支持通过环境变量覆盖默认值，便于多环境部署：
+
+```bash
+PROJECT_DIR=/www/wwwroot/glowing-winner \
+VENV_DIR=/www/wwwroot/glowing-winner/venv \
+BRANCH=main \
+REMOTE_NAME=origin \
+SERVICE_NAME=glowing-winner \
+bash /www/wwwroot/glowing-winner/deploy.sh
+```
+
+这样可以确保 **Git 仓库最新代码** 和 **服务器运行版本** 保持同步。
 
 ## 9. 上线后核验清单
 
