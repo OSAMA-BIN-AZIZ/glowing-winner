@@ -1,0 +1,22 @@
+[Unit]
+Description=Gunicorn service for glowing-winner Flask blog
+After=network.target
+
+[Service]
+Type=simple
+User=www
+Group=www
+WorkingDirectory=/www/wwwroot/glowing-winner
+Environment="PYTHONUNBUFFERED=1"
+Environment="BLOG_UPLOAD_DIR=/www/wwwdata/glowing-winner/uploads"
+Environment="BLOG_DB_PATH=/www/wwwdata/glowing-winner/blog.db"
+EnvironmentFile=-/www/wwwroot/glowing-winner/.env
+ExecStart=/www/wwwroot/glowing-winner/venv/bin/gunicorn --workers 2 --bind 127.0.0.1:8000 --timeout 60 app:app
+ExecReload=/bin/kill -s HUP $MAINPID
+Restart=always
+RestartSec=3
+KillSignal=SIGTERM
+TimeoutStopSec=30
+
+[Install]
+WantedBy=multi-user.target
