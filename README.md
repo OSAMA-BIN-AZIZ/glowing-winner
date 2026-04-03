@@ -83,8 +83,8 @@ pip install -r requirements.txt
 # 初始化数据库
 flask --app app.py init-db
 
-# 初始化管理员（可自定义）
-INIT_ADMIN_USERNAME=admin INIT_ADMIN_PASSWORD='ChangeMe123!' flask --app app.py init-admin
+# 初始化管理员（必须显式提供强密码）
+INIT_ADMIN_USERNAME=admin INIT_ADMIN_PASSWORD='请替换为强密码' flask --app app.py init-admin
 
 # 开发运行
 flask --app app.py run --debug
@@ -134,9 +134,9 @@ server {
    mkdir -p /www/wwwdata/blog-data/uploads
    chown -R www:www /www/wwwdata/blog-data
    ```
-5. 配置 `.env`（可选）：
+5. 配置 `.env`（必需，且必须包含强 `SECRET_KEY`）：
    ```env
-   SECRET_KEY=your-strong-secret
+   SECRET_KEY=replace-with-a-long-random-secret
    BLOG_DATA_DIR=/www/wwwdata/blog-data
    BLOG_DB_PATH=/www/wwwdata/blog-data/blog.db
    BLOG_UPLOAD_DIR=/www/wwwdata/blog-data/uploads
