@@ -80,6 +80,24 @@ BLOG_UPLOAD_DIR=/www/wwwdata/blog-data/uploads
 
 > 不建议将数据库和上传目录放到 Git 仓库目录内，以免 `git reset --hard` 时被覆盖。
 
+## 快速配置脚本（推荐）
+
+项目根目录提供 `quick_setup.sh`，可一条命令生成 `.env`，并可选初始化数据库和管理员：
+
+```bash
+bash quick_setup.sh \
+  --db-name blog_prod.db \
+  --admin-user admin \
+  --admin-pass 'StrongPass#2026' \
+  --init-db --init-admin
+```
+
+仅查看参数帮助：
+
+```bash
+bash quick_setup.sh --help
+```
+
 ## 4) 本地运行
 
 ```bash

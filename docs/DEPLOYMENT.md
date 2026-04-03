@@ -104,6 +104,25 @@ PY
 
 ---
 
+## 4.1 快速配置脚本（可选）
+
+项目根目录提供 `quick_setup.sh`，用于快速写入 `.env`，并可选执行数据库与管理员初始化：
+
+```bash
+cd /www/wwwroot/glowing-winner
+bash quick_setup.sh \
+  --db-name blog_prod.db \
+  --admin-user admin \
+  --admin-pass 'StrongPass#2026' \
+  --init-db --init-admin
+```
+
+查看全部参数：
+
+```bash
+bash quick_setup.sh --help
+```
+
 ## 5. 初始化数据库与管理员
 
 ```bash
