@@ -9,7 +9,8 @@ class Config:
     SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key-change-me")
 
     DATA_DIR = os.getenv("BLOG_DATA_DIR", str(BASE_DIR / "instance"))
-    DB_PATH = os.getenv("BLOG_DB_PATH", str(Path(DATA_DIR) / "blog.db"))
+    DB_NAME = os.getenv("BLOG_DB_NAME", "blog.db")
+    DB_PATH = os.getenv("BLOG_DB_PATH", str(Path(DATA_DIR) / DB_NAME))
     UPLOAD_FOLDER = os.getenv("BLOG_UPLOAD_DIR", str(Path(DATA_DIR) / "uploads"))
 
     SQLALCHEMY_DATABASE_URI = f"sqlite:///{DB_PATH}"

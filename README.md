@@ -72,7 +72,9 @@ blog/
 
 ```bash
 BLOG_DATA_DIR=/www/wwwdata/blog-data
-BLOG_DB_PATH=/www/wwwdata/blog-data/blog.db
+BLOG_DB_NAME=blog.db
+# 或直接指定完整路径（优先级更高）
+# BLOG_DB_PATH=/www/wwwdata/blog-data/blog.db
 BLOG_UPLOAD_DIR=/www/wwwdata/blog-data/uploads
 ```
 
@@ -90,6 +92,8 @@ flask --app app.py init-db
 
 # 初始化管理员（必须显式提供强密码）
 INIT_ADMIN_USERNAME=admin INIT_ADMIN_PASSWORD='请替换为强密码' flask --app app.py init-admin
+# 或使用部署环境变量
+BLOG_ADMIN_USERNAME=admin BLOG_ADMIN_PASSWORD='请替换为强密码' flask --app app.py init-admin
 
 # 开发运行
 flask --app app.py run --debug

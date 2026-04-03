@@ -73,8 +73,8 @@ def create_app() -> Flask:
 
     @app.cli.command("init-admin")
     def init_admin_command():
-        username = os.getenv("INIT_ADMIN_USERNAME", "admin")
-        password = os.getenv("INIT_ADMIN_PASSWORD")
+        username = os.getenv("INIT_ADMIN_USERNAME") or os.getenv("BLOG_ADMIN_USERNAME", "admin")
+        password = os.getenv("INIT_ADMIN_PASSWORD") or os.getenv("BLOG_ADMIN_PASSWORD")
 
         if not password:
             raise RuntimeError(

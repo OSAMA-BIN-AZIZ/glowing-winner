@@ -14,8 +14,8 @@
         <nav>
             <a href="{{ url_for('home') }}">首页</a>
             <a href="{{ url_for('blog_list') }}">博客</a>
-            <a href="{{ url_for('about') }}">About</a>
-            <a href="{{ url_for('contact') }}">Contact</a>
+            <a href="{{ url_for('about') }}">关于我们</a>
+            <a href="{{ url_for('contact') }}">联系我们</a>
             <a href="{{ url_for('admin_login') }}">后台</a>
         </nav>
     </div>
@@ -36,7 +36,7 @@
 </main>
 
 <footer class="site-footer">
-    <div class="container">© {{ now.year }} MyBrand. All rights reserved.</div>
+    <div class="container">© {{ now.year }} MyBrand. 版权所有。</div>
 </footer>
 </body>
 </html>
