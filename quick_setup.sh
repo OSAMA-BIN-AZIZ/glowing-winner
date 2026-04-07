@@ -11,6 +11,7 @@ UPLOAD_DIR=""
 SECRET_KEY=""
 INIT_DB=0
 INIT_ADMIN=0
+SITE_URL="http://127.0.0.1:5000"
 
 usage() {
   cat <<'USAGE'
@@ -26,6 +27,7 @@ usage() {
   --data-dir <path>         数据目录（默认: /www/wwwdata/glowing-winner-data）
   --upload-dir <path>       上传目录（默认: <data-dir>/uploads）
   --secret-key <value>      Flask SECRET_KEY（不传则自动生成）
+  --site-url <url>          站点访问地址（默认: http://127.0.0.1:5000）
   --init-db                 写入 .env 后执行 flask init-db
   --init-admin              写入 .env 后执行 flask init-admin（需提供管理员密码）
   -h, --help                显示帮助
@@ -49,6 +51,8 @@ while [[ $# -gt 0 ]]; do
       UPLOAD_DIR="$2"; shift 2 ;;
     --secret-key)
       SECRET_KEY="$2"; shift 2 ;;
+    --site-url)
+      SITE_URL="$2"; shift 2 ;;
     --init-db)
       INIT_DB=1; shift ;;
     --init-admin)
@@ -115,3 +119,14 @@ if [[ $INIT_ADMIN -eq 1 ]]; then
 fi
 
 echo "🎉 快速配置完成。"
+echo "----------------------------------------"
+echo "登录地址: ${SITE_URL%/}/admin/login"
+echo "登录账号: $ADMIN_USERNAME"
+if [[ -n "$ADMIN_PASSWORD" ]]; then
+  echo "登录密码: $ADMIN_PASSWORD"
+else
+  echo "登录密码: （未设置；如需初始化管理员请传 --admin-pass）"
+fi
+echo "数据库类型: SQLite"
+echo "数据库路径: $DATA_DIR/$DB_NAME"
+echo "数据库账号/密码: SQLite 文件库，无独立账号密码"
