@@ -6,6 +6,8 @@
         <h1>文章管理</h1>
         <div>
             <a class="btn" href="{{ url_for('admin_post_create') }}">新建文章</a>
+            <a class="btn btn-secondary" href="{{ url_for('admin_downloads') }}">文件下载</a>
+            <a class="btn btn-secondary" href="{{ url_for('admin_account') }}">账号设置</a>
             <a class="btn btn-secondary" href="{{ url_for('admin_logout') }}">退出</a>
         </div>
     </div>

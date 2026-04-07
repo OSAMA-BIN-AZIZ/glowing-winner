@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block title %}文件下载管理{% endblock %}
+{% block content %}
+<section class="admin-box">
+    <h1>文件下载管理</h1>
+    <form method="post" enctype="multipart/form-data">
+        <label>选择文件</label>
+        <input type="file" name="file" required>
+        <button class="btn" type="submit">上传并生成下载地址</button>
+        <a class="btn btn-secondary" href="{{ url_for('admin_dashboard') }}">返回后台</a>
+    </form>
+    <p style="margin-top: 1rem;">说明：生成的地址为随机 token，不在站内公开页面展示，并附带 noindex/no follow 响应头。</p>
+</section>
+
+<section style="margin-top:1rem;">
+    <h2>已生成下载地址</h2>
+    <table>
+        <thead>
+            <tr><th>ID</th><th>文件名</th><th>生成时间(UTC)</th><th>下载地址</th></tr>
+        </thead>
+        <tbody>
+            {% for item in files %}
+            <tr>
+                <td>{{ item.id }}</td>
+                <td>{{ item.original_name }}</td>
+                <td>{{ item.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                <td><a href="{{ url_for('download_file_by_token', token=item.token, _external=True) }}" target="_blank">{{ url_for('download_file_by_token', token=item.token, _external=True) }}</a></td>
+            </tr>
+            {% else %}
+            <tr><td colspan="4">暂无文件</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endblock %}
