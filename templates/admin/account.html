@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}账号设置{% endblock %}
+{% block content %}
+<section class="admin-box">
+    <h1>账号设置</h1>
+    <form method="post">
+        <label>登录用户名</label>
+        <input type="text" name="username" value="{{ admin.username }}" required>
+
+        <label>旧密码（用于确认操作）</label>
+        <input type="password" name="old_password" required>
+
+        <label>新密码（留空则不修改）</label>
+        <input type="password" name="new_password" placeholder="至少10位，含大小写字母、数字和特殊字符">
+
+        <label>确认新密码</label>
+        <input type="password" name="confirm_password" placeholder="再次输入新密码">
+
+        <p class="muted" style="margin:.5rem 0 1rem;">
+            密码规则：至少 10 位，且包含大写字母、小写字母、数字、特殊字符。
+        </p>
+
+        <button class="btn" type="submit">保存修改</button>
+        <a class="btn btn-secondary" href="{{ url_for('admin_dashboard') }}">返回后台</a>
+    </form>
+</section>
+{% endblock %}

@@ -26,6 +26,7 @@ from config import Config
 db = SQLAlchemy()
 
 ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png", "webp"}
+PASSWORD_MIN_LENGTH = 10
 
 
 class Admin(db.Model):
@@ -112,6 +113,19 @@ def create_app() -> Flask:
         ext = filename.rsplit(".", 1)[1].lower()
         return f"{datetime.utcnow().strftime('%Y%m%d%H%M%S')}-{uuid.uuid4().hex[:8]}.{ext}"
 
+    def validate_new_password(password: str) -> str | None:
+        if len(password) < PASSWORD_MIN_LENGTH:
+            return f"新密码长度至少 {PASSWORD_MIN_LENGTH} 位。"
+        if not re.search(r"[A-Z]", password):
+            return "新密码需包含至少 1 个大写字母。"
+        if not re.search(r"[a-z]", password):
+            return "新密码需包含至少 1 个小写字母。"
+        if not re.search(r"\d", password):
+            return "新密码需包含至少 1 个数字。"
+        if not re.search(r"[^A-Za-z0-9]", password):
+            return "新密码需包含至少 1 个特殊字符。"
+        return None
+
     @app.context_processor
     def inject_now():
         return {"now": datetime.utcnow()}
@@ -180,6 +194,47 @@ def create_app() -> Flask:
     def admin_dashboard():
         posts = Post.query.order_by(desc(Post.created_at)).all()
         return render_template("admin/dashboard.html", posts=posts)
+
+    @app.route("/admin/account", methods=["GET", "POST"])
+    @login_required
+    def admin_account():
+        admin = Admin.query.get_or_404(session["admin_id"])
+
+        if request.method == "POST":
+            new_username = request.form.get("username", "").strip()
+            old_password = request.form.get("old_password", "")
+            new_password = request.form.get("new_password", "")
+            confirm_password = request.form.get("confirm_password", "")
+
+            if not new_username:
+                flash("用户名不能为空。", "warning")
+                return render_template("admin/account.html", admin=admin)
+
+            if not check_password_hash(admin.password_hash, old_password):
+                flash("旧密码错误。", "danger")
+                return render_template("admin/account.html", admin=admin)
+
+            existing_admin = Admin.query.filter_by(username=new_username).first()
+            if existing_admin and existing_admin.id != admin.id:
+                flash("该用户名已被占用，请更换。", "warning")
+                return render_template("admin/account.html", admin=admin)
+
+            if new_password:
+                if new_password != confirm_password:
+                    flash("两次输入的新密码不一致。", "warning")
+                    return render_template("admin/account.html", admin=admin)
+                password_error = validate_new_password(new_password)
+                if password_error:
+                    flash(password_error, "warning")
+                    return render_template("admin/account.html", admin=admin)
+                admin.password_hash = generate_password_hash(new_password)
+
+            admin.username = new_username
+            db.session.commit()
+            flash("账号信息已更新。", "success")
+            return redirect(url_for("admin_account"))
+
+        return render_template("admin/account.html", admin=admin)
 
     @app.route("/admin/posts/new", methods=["GET", "POST"])
     @login_required
