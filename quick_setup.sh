@@ -6,6 +6,8 @@ ENV_FILE="$PROJECT_DIR/.env"
 DB_NAME="blog.db"
 ADMIN_USERNAME="admin"
 ADMIN_PASSWORD=""
+ADMIN_USER_PROVIDED=0
+ADMIN_PASS_PROVIDED=0
 DATA_DIR="/www/wwwdata/glowing-winner-data"
 UPLOAD_DIR=""
 SECRET_KEY=""
@@ -21,13 +23,13 @@ usage() {
 
 选项:
   --db-name <name>          数据库文件名（默认: blog.db）
-  --admin-user <name>       管理员用户名（默认: admin）
-  --admin-pass <pass>       管理员密码（建议强密码）
+  --admin-user <name>       管理员用户名（不传则随机生成）
+  --admin-pass <pass>       管理员密码（不传则随机生成）
   --data-dir <path>         数据目录（默认: /www/wwwdata/glowing-winner-data）
   --upload-dir <path>       上传目录（默认: <data-dir>/uploads）
   --secret-key <value>      Flask SECRET_KEY（不传则自动生成）
   --init-db                 写入 .env 后执行 flask init-db
-  --init-admin              写入 .env 后执行 flask init-admin（需提供管理员密码）
+  --init-admin              写入 .env 后执行 flask init-admin（未传密码则自动生成）
   -h, --help                显示帮助
 
 示例:
@@ -40,9 +42,9 @@ while [[ $# -gt 0 ]]; do
     --db-name)
       DB_NAME="$2"; shift 2 ;;
     --admin-user)
-      ADMIN_USERNAME="$2"; shift 2 ;;
+      ADMIN_USERNAME="$2"; ADMIN_USER_PROVIDED=1; shift 2 ;;
     --admin-pass)
-      ADMIN_PASSWORD="$2"; shift 2 ;;
+      ADMIN_PASSWORD="$2"; ADMIN_PASS_PROVIDED=1; shift 2 ;;
     --data-dir)
       DATA_DIR="$2"; shift 2 ;;
     --upload-dir)
@@ -74,6 +76,22 @@ PY
 )"
 fi
 
+if [[ $ADMIN_USER_PROVIDED -eq 0 ]]; then
+  ADMIN_USERNAME="admin_$(python3 - <<'PY'
+import secrets
+print(secrets.token_hex(3))
+PY
+)"
+fi
+
+if [[ $ADMIN_PASS_PROVIDED -eq 0 ]]; then
+  ADMIN_PASSWORD="$(python3 - <<'PY'
+import secrets
+print(secrets.token_urlsafe(16))
+PY
+)"
+fi
+
 mkdir -p "$DATA_DIR" "$UPLOAD_DIR"
 
 cat > "$ENV_FILE" <<ENVEOF
@@ -88,13 +106,9 @@ ENVEOF
 echo "✅ 已写入配置: $ENV_FILE"
 echo "   - BLOG_DB_NAME=$DB_NAME"
 echo "   - BLOG_ADMIN_USERNAME=$ADMIN_USERNAME"
+echo "   - BLOG_ADMIN_PASSWORD=$ADMIN_PASSWORD"
 echo "   - BLOG_DATA_DIR=$DATA_DIR"
 echo "   - BLOG_UPLOAD_DIR=$UPLOAD_DIR"
-
-if [[ $INIT_ADMIN -eq 1 && -z "$ADMIN_PASSWORD" ]]; then
-  echo "❌ --init-admin 需要 --admin-pass"
-  exit 1
-fi
 
 if [[ $INIT_DB -eq 1 || $INIT_ADMIN -eq 1 ]]; then
   cd "$PROJECT_DIR"
@@ -115,3 +129,5 @@ if [[ $INIT_ADMIN -eq 1 ]]; then
 fi
 
 echo "🎉 快速配置完成。"
+echo "🔐 管理员账号: $ADMIN_USERNAME"
+echo "🔐 管理员密码: $ADMIN_PASSWORD"
