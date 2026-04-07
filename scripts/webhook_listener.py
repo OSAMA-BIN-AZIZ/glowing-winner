@@ -7,10 +7,14 @@ import subprocess
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
 
-HOST = "127.0.0.1"
-PORT = 9001
-DEPLOY_SCRIPT = "/www/wwwroot/glowing-winner/deploy.sh"
+HOST = os.environ.get("WEBHOOK_HOST", "127.0.0.1")
+PORT = int(os.environ.get("WEBHOOK_PORT", "9001"))
+WEBHOOK_PATH = os.environ.get("WEBHOOK_PATH", "/github-webhook")
+DEPLOY_SCRIPT = os.environ.get(
+    "DEPLOY_SCRIPT", "/www/wwwroot/glowing-winner/deploy.sh"
+)
 WEBHOOK_SECRET = os.environ.get("GITHUB_WEBHOOK_SECRET", "")
+TARGET_REF = os.environ.get("WEBHOOK_TARGET_REF", "refs/heads/main")
 
 
 class GitHubWebhookHandler(BaseHTTPRequestHandler):
@@ -21,7 +25,7 @@ class GitHubWebhookHandler(BaseHTTPRequestHandler):
         self.wfile.write(body.encode("utf-8"))
 
     def do_POST(self) -> None:
-        if self.path != "/github-webhook":
+        if self.path != WEBHOOK_PATH:
             self._send(404, "not found")
             return
 
@@ -52,8 +56,8 @@ class GitHubWebhookHandler(BaseHTTPRequestHandler):
             self._send(400, "invalid json")
             return
 
-        if data.get("ref") != "refs/heads/main":
-            self._send(200, "ignored: not main branch")
+        if data.get("ref") != TARGET_REF:
+            self._send(200, "ignored: not target branch")
             return
 
         result = subprocess.run(
@@ -71,5 +75,5 @@ class GitHubWebhookHandler(BaseHTTPRequestHandler):
 
 if __name__ == "__main__":
     server = HTTPServer((HOST, PORT), GitHubWebhookHandler)
-    print(f"GitHub webhook listener started at http://{HOST}:{PORT}/github-webhook")
+    print(f"GitHub webhook listener started at http://{HOST}:{PORT}{WEBHOOK_PATH}")
     server.serve_forever()

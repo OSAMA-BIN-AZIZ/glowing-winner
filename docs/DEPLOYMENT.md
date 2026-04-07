@@ -354,3 +354,74 @@ systemctl restart glowing-winner.service
 - 配置基础防火墙（仅开放 22/80/443）
 - 对 `blog.db` 和 `uploads/` 做定期异地备份
 
+
+---
+
+## 13. 一键自动化配置 Webhook（新增）
+
+如果你希望把“创建 webhook systemd 服务 + 启用监听 + 绑定 deploy.sh”一步做完，可使用：
+
+```bash
+cd /www/wwwroot/glowing-winner
+sudo WEBHOOK_SECRET='请替换为强随机字符串' \
+APP_SERVICE_NAME='glowing-winner' \
+WEBHOOK_SERVICE_NAME='glowing-winner-webhook' \
+WEBHOOK_HOST='127.0.0.1' \
+WEBHOOK_PORT='9001' \
+WEBHOOK_PATH='/github-webhook' \
+WEBHOOK_TARGET_REF='refs/heads/main' \
+bash scripts/auto_setup_webhook.sh
+```
+
+脚本会自动完成：
+
+1. 校验 `scripts/webhook_listener.py` 和 `deploy.sh` 存在
+2. 给 `deploy.sh` 添加执行权限
+3. 写入 `/etc/default/<webhook-service>`（保存 `GITHUB_WEBHOOK_SECRET`）
+4. 生成并启用 `/etc/systemd/system/<webhook-service>.service`
+5. 输出 webhook 与应用服务状态
+6. 自动注入 webhook 监听参数（host/port/path/target ref）
+
+查看帮助：
+
+```bash
+bash scripts/auto_setup_webhook.sh --help
+```
+
+> 注意：脚本需要 root/sudo 权限；GitHub 仓库侧仍需手动配置 Webhook URL、push 事件与 Secret。
+
+---
+
+## 14. 一键自动化配置 Nginx 反代 + HTTPS（Webhook）
+
+如果你希望把 `/github-webhook` 的 Nginx 反代与 HTTPS 一次完成，可使用：
+
+```bash
+cd /www/wwwroot/glowing-winner
+sudo DOMAIN='your-domain.com' \
+EMAIL='ops@your-domain.com' \
+NGINX_CONF='/etc/nginx/conf.d/glowing-winner.conf' \
+bash scripts/auto_setup_webhook_https.sh
+```
+
+脚本行为：
+
+1. 备份原 Nginx 配置文件
+2. 在指定 `server_name` 的 `server {}` 中注入 webhook location（幂等，可重复执行）
+3. 执行 `nginx -t` 并 reload
+4. 调用 `certbot --nginx` 申请/续签证书并启用 HTTPS 跳转
+
+仅写反代、不申请证书（例如 DNS 还没解析好）：
+
+```bash
+sudo DOMAIN='your-domain.com' \
+NGINX_CONF='/etc/nginx/conf.d/glowing-winner.conf' \
+SKIP_CERTBOT=1 \
+bash scripts/auto_setup_webhook_https.sh
+```
+
+查看帮助：
+
+```bash
+bash scripts/auto_setup_webhook_https.sh --help
+```

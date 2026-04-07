@@ -224,3 +224,29 @@ server {
 - `Nginx + SSL(Let's Encrypt)` 一键配置说明
 - `GitHub Webhook 签名校验` 示例脚本（更安全）
 - 简单防暴力登录与安全头配置
+
+## 自动化部署快速配置（Webhook）
+
+新增脚本：`scripts/auto_setup_webhook.sh`，用于一键配置 webhook 监听服务（systemd）并联动 `deploy.sh`。
+
+示例：
+
+```bash
+cd /www/wwwroot/glowing-winner
+sudo WEBHOOK_SECRET='请替换为强随机字符串' \
+WEBHOOK_TARGET_REF='refs/heads/main' \
+bash scripts/auto_setup_webhook.sh
+```
+
+详细说明见：`docs/DEPLOYMENT.md` 的“13. 一键自动化配置 Webhook（新增）”。
+
+## 自动化配置 Nginx Webhook 反代 + HTTPS
+
+新增脚本：`scripts/auto_setup_webhook_https.sh`，可自动把 `/github-webhook` 反代到本机 webhook 监听器并调用 certbot 配置 HTTPS。
+
+```bash
+cd /www/wwwroot/glowing-winner
+sudo DOMAIN='your-domain.com' EMAIL='ops@your-domain.com' \
+NGINX_CONF='/etc/nginx/conf.d/glowing-winner.conf' \
+bash scripts/auto_setup_webhook_https.sh
+```
