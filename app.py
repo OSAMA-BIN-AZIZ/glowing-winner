@@ -1,5 +1,6 @@
 import os
 import re
+import secrets
 import uuid
 from datetime import datetime
 from functools import wraps
@@ -58,6 +59,16 @@ class Post(db.Model):
         return self.status == "published"
 
 
+class DownloadFile(db.Model):
+    __tablename__ = "download_files"
+
+    id = db.Column(db.Integer, primary_key=True)
+    original_name = db.Column(db.String(255), nullable=False)
+    storage_name = db.Column(db.String(255), unique=True, nullable=False)
+    token = db.Column(db.String(80), unique=True, nullable=False, index=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+
 def create_app() -> Flask:
     app = Flask(__name__)
     app.config.from_object(Config)
@@ -66,6 +77,8 @@ def create_app() -> Flask:
 
     Path(app.config["DATA_DIR"]).mkdir(parents=True, exist_ok=True)
     Path(app.config["UPLOAD_FOLDER"]).mkdir(parents=True, exist_ok=True)
+    private_download_dir = Path(app.config["DATA_DIR"]) / "private_downloads"
+    private_download_dir.mkdir(parents=True, exist_ok=True)
 
     @app.cli.command("init-db")
     def init_db_command():
@@ -112,6 +125,13 @@ def create_app() -> Flask:
     def build_upload_name(filename: str) -> str:
         ext = filename.rsplit(".", 1)[1].lower()
         return f"{datetime.utcnow().strftime('%Y%m%d%H%M%S')}-{uuid.uuid4().hex[:8]}.{ext}"
+
+    def build_private_file_name(filename: str) -> str:
+        safe_name = secure_filename(filename) or "file"
+        ext = ""
+        if "." in safe_name:
+            ext = f".{safe_name.rsplit('.', 1)[1].lower()}"
+        return f"{datetime.utcnow().strftime('%Y%m%d%H%M%S')}-{uuid.uuid4().hex[:12]}{ext}"
 
     def validate_new_password(password: str) -> str | None:
         if len(password) < PASSWORD_MIN_LENGTH:
@@ -194,6 +214,33 @@ def create_app() -> Flask:
     def admin_dashboard():
         posts = Post.query.order_by(desc(Post.created_at)).all()
         return render_template("admin/dashboard.html", posts=posts)
+
+    @app.route("/admin/downloads", methods=["GET", "POST"])
+    @login_required
+    def admin_downloads():
+        if request.method == "POST":
+            upload_file = request.files.get("file")
+            if not upload_file or not upload_file.filename:
+                flash("请选择要上传的文件。", "warning")
+                return redirect(url_for("admin_downloads"))
+
+            original_name = upload_file.filename
+            storage_name = build_private_file_name(original_name)
+            upload_file.save(private_download_dir / storage_name)
+
+            file_token = secrets.token_urlsafe(24)
+            download_file = DownloadFile(
+                original_name=original_name,
+                storage_name=storage_name,
+                token=file_token,
+            )
+            db.session.add(download_file)
+            db.session.commit()
+            flash("文件上传成功，已生成随机下载地址。", "success")
+            return redirect(url_for("admin_downloads"))
+
+        files = DownloadFile.query.order_by(desc(DownloadFile.created_at)).all()
+        return render_template("admin/downloads.html", files=files)
 
     @app.route("/admin/account", methods=["GET", "POST"])
     @login_required
@@ -343,6 +390,19 @@ def create_app() -> Flask:
         filename = build_upload_name(secure_filename(image.filename))
         image.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
         return {"ok": True, "url": url_for("uploaded_file", filename=filename)}, 200
+
+    @app.route("/download/<token>")
+    def download_file_by_token(token):
+        download_file = DownloadFile.query.filter_by(token=token).first_or_404()
+        response = send_from_directory(
+            private_download_dir,
+            download_file.storage_name,
+            as_attachment=True,
+            download_name=download_file.original_name,
+        )
+        response.headers["X-Robots-Tag"] = "noindex, nofollow, noarchive, nosnippet"
+        response.headers["Cache-Control"] = "private, no-store, max-age=0"
+        return response
 
     with app.app_context():
         db.create_all()
