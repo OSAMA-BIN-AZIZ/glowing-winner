@@ -96,8 +96,11 @@ def create_app() -> Flask:
                 "INIT_ADMIN_PASSWORD is required. Refusing to create admin with a default password."
             )
 
-        if Admin.query.filter_by(username=username).first():
-            print(f"Admin '{username}' already exists.")
+        existing_admin = Admin.query.filter_by(username=username).first()
+        if existing_admin:
+            existing_admin.password_hash = generate_password_hash(password)
+            db.session.commit()
+            print(f"Admin password updated: {username}")
             return
 
         admin = Admin(username=username, password_hash=generate_password_hash(password))

@@ -128,6 +128,8 @@ INIT_ADMIN_USERNAME=admin INIT_ADMIN_PASSWORD='请替换为强密码' flask --ap
 # 或使用部署环境变量
 BLOG_ADMIN_USERNAME=admin BLOG_ADMIN_PASSWORD='请替换为强密码' flask --app app.py init-admin
 
+# 说明：若用户名已存在，init-admin 会更新该用户密码（便于重置登录凭据）
+
 # 开发运行
 flask --app app.py run --debug
 ```
