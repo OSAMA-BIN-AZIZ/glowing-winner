@@ -102,6 +102,7 @@ bash quick_setup.sh --no-init-db --no-init-admin
 ```
 
 当脚本检测到 Flask 命令不可用时，会自动创建/复用 `venv` 并执行 `pip install -r requirements.txt` 后再继续初始化。
+同时会默认写入 `BLOG_DEBUG=true` 与 `BLOG_SHOW_LOGIN_FAILURE_REASON=true`，后台登录失败时会显示“用户名不存在/密码错误”等具体原因，便于排查。
 
 仅查看参数帮助：
 
