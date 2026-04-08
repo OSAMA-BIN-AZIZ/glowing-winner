@@ -5,6 +5,7 @@ import uuid
 from datetime import datetime
 from functools import wraps
 from pathlib import Path
+from typing import Optional
 
 from flask import (
     Flask,
@@ -133,7 +134,7 @@ def create_app() -> Flask:
             ext = f".{safe_name.rsplit('.', 1)[1].lower()}"
         return f"{datetime.utcnow().strftime('%Y%m%d%H%M%S')}-{uuid.uuid4().hex[:12]}{ext}"
 
-    def validate_new_password(password: str) -> str | None:
+    def validate_new_password(password: str) -> Optional[str]:
         if len(password) < PASSWORD_MIN_LENGTH:
             return f"新密码长度至少 {PASSWORD_MIN_LENGTH} 位。"
         if not re.search(r"[A-Z]", password):
