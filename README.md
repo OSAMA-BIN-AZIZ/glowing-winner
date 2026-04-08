@@ -94,13 +94,22 @@ bash quick_setup.sh \
   --init-db --init-admin
 ```
 
+默认直接执行 `bash quick_setup.sh` 也会自动执行 `init-db` 与 `init-admin`（推荐）。
+如只想写入 `.env` 而不做初始化，可使用：
+
+```bash
+bash quick_setup.sh --no-init-db --no-init-admin
+```
+
+当脚本检测到 Flask 命令不可用时，会自动创建/复用 `venv` 并执行 `pip install -r requirements.txt` 后再继续初始化。
+
 仅查看参数帮助：
 
 ```bash
 bash quick_setup.sh --help
 ```
 
-> 注意：如果只执行 `bash quick_setup.sh`（未加 `--init-admin`），脚本只会写入 `.env`，不会把管理员写入数据库。  
+> 注意：当你传了 `--no-init-admin` 时，脚本只会写入 `.env`，不会把管理员写入数据库。  
 > 这种情况下需要额外执行 `python3 -m flask --app app.py init-admin`（或 `flask --app app.py init-admin`）后，才能使用生成的账号密码登录后台。
 
 ## 4) 本地运行
