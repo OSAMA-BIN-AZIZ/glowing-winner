@@ -5,8 +5,17 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent
 
 
+def env_bool(name: str, default: bool = False) -> bool:
+    value = os.getenv(name)
+    if value is None:
+        return default
+    return value.strip().lower() in {"1", "true", "yes", "on"}
+
+
 class Config:
     SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key-change-me")
+    DEBUG = env_bool("BLOG_DEBUG", True)
+    SHOW_LOGIN_FAILURE_REASON = env_bool("BLOG_SHOW_LOGIN_FAILURE_REASON", DEBUG)
 
     DATA_DIR = os.getenv("BLOG_DATA_DIR", str(BASE_DIR / "instance"))
     DB_NAME = os.getenv("BLOG_DB_NAME", "blog.db")

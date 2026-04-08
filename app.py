@@ -5,6 +5,7 @@ import uuid
 from datetime import datetime
 from functools import wraps
 from pathlib import Path
+from typing import Optional
 
 from flask import (
     Flask,
@@ -95,8 +96,11 @@ def create_app() -> Flask:
                 "INIT_ADMIN_PASSWORD is required. Refusing to create admin with a default password."
             )
 
-        if Admin.query.filter_by(username=username).first():
-            print(f"Admin '{username}' already exists.")
+        existing_admin = Admin.query.filter_by(username=username).first()
+        if existing_admin:
+            existing_admin.password_hash = generate_password_hash(password)
+            db.session.commit()
+            print(f"Admin password updated: {username}")
             return
 
         admin = Admin(username=username, password_hash=generate_password_hash(password))
@@ -133,7 +137,7 @@ def create_app() -> Flask:
             ext = f".{safe_name.rsplit('.', 1)[1].lower()}"
         return f"{datetime.utcnow().strftime('%Y%m%d%H%M%S')}-{uuid.uuid4().hex[:12]}{ext}"
 
-    def validate_new_password(password: str) -> str | None:
+    def validate_new_password(password: str) -> Optional[str]:
         if len(password) < PASSWORD_MIN_LENGTH:
             return f"新密码长度至少 {PASSWORD_MIN_LENGTH} 位。"
         if not re.search(r"[A-Z]", password):
@@ -198,7 +202,13 @@ def create_app() -> Flask:
                 flash("登录成功。", "success")
                 return redirect(url_for("admin_dashboard"))
 
-            flash("用户名或密码错误。", "danger")
+            if app.config.get("SHOW_LOGIN_FAILURE_REASON"):
+                if not admin:
+                    flash("登录失败：用户名不存在。", "danger")
+                else:
+                    flash("登录失败：密码错误。", "danger")
+            else:
+                flash("用户名或密码错误。", "danger")
 
         return render_template("admin/login.html")
 
