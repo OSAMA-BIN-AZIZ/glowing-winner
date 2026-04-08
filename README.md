@@ -100,6 +100,9 @@ bash quick_setup.sh \
 bash quick_setup.sh --help
 ```
 
+> 注意：如果只执行 `bash quick_setup.sh`（未加 `--init-admin`），脚本只会写入 `.env`，不会把管理员写入数据库。  
+> 这种情况下需要额外执行 `python3 -m flask --app app.py init-admin`（或 `flask --app app.py init-admin`）后，才能使用生成的账号密码登录后台。
+
 ## 4) 本地运行
 
 ```bash

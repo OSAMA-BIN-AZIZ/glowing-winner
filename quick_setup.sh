@@ -13,6 +13,7 @@ UPLOAD_DIR=""
 SECRET_KEY=""
 INIT_DB=0
 INIT_ADMIN=0
+FLASK_RUNNER=()
 
 usage() {
   cat <<'USAGE'
@@ -63,6 +64,19 @@ while [[ $# -gt 0 ]]; do
       exit 1 ;;
   esac
 done
+
+detect_flask_runner() {
+  if command -v flask >/dev/null 2>&1; then
+    FLASK_RUNNER=(flask)
+    return
+  fi
+  if command -v python3 >/dev/null 2>&1; then
+    FLASK_RUNNER=(python3 -m flask)
+    return
+  fi
+  echo "❌ 未找到 flask 或 python3，无法执行初始化命令。"
+  exit 1
+}
 
 if [[ -z "$UPLOAD_DIR" ]]; then
   UPLOAD_DIR="$DATA_DIR/uploads"
@@ -116,18 +130,25 @@ if [[ $INIT_DB -eq 1 || $INIT_ADMIN -eq 1 ]]; then
     # shellcheck disable=SC1091
     source "$PROJECT_DIR/venv/bin/activate"
   fi
+  detect_flask_runner
 fi
 
 if [[ $INIT_DB -eq 1 ]]; then
   echo "▶ 初始化数据库..."
-  flask --app app.py init-db
+  "${FLASK_RUNNER[@]}" --app app.py init-db
 fi
 
 if [[ $INIT_ADMIN -eq 1 ]]; then
   echo "▶ 初始化管理员..."
-  BLOG_ADMIN_USERNAME="$ADMIN_USERNAME" BLOG_ADMIN_PASSWORD="$ADMIN_PASSWORD" flask --app app.py init-admin
+  BLOG_ADMIN_USERNAME="$ADMIN_USERNAME" BLOG_ADMIN_PASSWORD="$ADMIN_PASSWORD" "${FLASK_RUNNER[@]}" --app app.py init-admin
 fi
 
 echo "🎉 快速配置完成。"
 echo "🔐 管理员账号: $ADMIN_USERNAME"
 echo "🔐 管理员密码: $ADMIN_PASSWORD"
+if [[ $INIT_ADMIN -eq 0 ]]; then
+  echo "⚠️  当前仅写入 .env，尚未初始化管理员到数据库。"
+  echo "   如需创建管理员，请执行（优先）："
+  echo "   BLOG_ADMIN_USERNAME=\"$ADMIN_USERNAME\" BLOG_ADMIN_PASSWORD=\"$ADMIN_PASSWORD\" python3 -m flask --app app.py init-admin"
+  echo "   （若已安装 flask 命令，也可将 'python3 -m flask' 替换为 'flask'）"
+fi
