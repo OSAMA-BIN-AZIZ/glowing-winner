@@ -88,9 +88,22 @@ async function openSelectorPicker(payload) {
   });
 }
 
+
 async function getSettings() {
   const { settings } = await chrome.storage.sync.get('settings');
-  return { ...DEFAULT_SETTINGS, ...(settings || {}) };
+  return normalizeSettings(settings);
+}
+
+function normalizeSettings(settings = {}) {
+  const shops = Array.isArray(settings.shops) ? settings.shops : [];
+  return {
+    ...DEFAULT_SETTINGS,
+    ...settings,
+    shops: DEFAULT_SETTINGS.shops.map((defaultShop, index) => ({
+      ...defaultShop,
+      ...(shops[index] || {})
+    }))
+  };
 }
 
 async function scheduleDailyAlarm(settings) {
@@ -106,7 +119,12 @@ async function scheduleDailyAlarm(settings) {
 function getNextRunTime(hour, minute) {
   const now = new Date();
   const next = new Date();
-  next.setHours(Number(hour), Number(minute), 0, 0);
+  next.setHours(
+    clampNumber(hour, 0, 23, DEFAULT_SETTINGS.runHour),
+    clampNumber(minute, 0, 59, DEFAULT_SETTINGS.runMinute),
+    0,
+    0
+  );
   if (next <= now) {
     next.setDate(next.getDate() + 1);
   }
@@ -115,11 +133,12 @@ function getNextRunTime(hour, minute) {
 
 async function runCollection(trigger) {
   const settings = await getSettings();
+  const waitAfterLoadMs = clampNumber(settings.waitAfterLoadMs, 1000, 120000, DEFAULT_SETTINGS.waitAfterLoadMs);
   const date = formatDate(new Date());
   const records = [];
 
   for (const shop of settings.shops.filter((item) => item.name && item.url)) {
-    const record = await collectShop(shop, settings.waitAfterLoadMs, date);
+    const record = await collectShop(shop, waitAfterLoadMs, date);
     records.push(record);
   }
 
@@ -152,7 +171,7 @@ async function collectShop(shop, waitAfterLoadMs, date) {
   try {
     tab = await chrome.tabs.create({ url: shop.url, active: false });
     await waitForTabComplete(tab.id);
-    await delay(Number(waitAfterLoadMs) || 8000);
+    await delay(waitAfterLoadMs);
     await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ['content.js'] });
     const response = await chrome.tabs.sendMessage(tab.id, {
       type: 'EXTRACT_ALIBABA_STATS',
@@ -185,8 +204,13 @@ async function collectShop(shop, waitAfterLoadMs, date) {
   }
 }
 
-function waitForTabComplete(tabId) {
-  return new Promise((resolve) => {
+async function waitForTabComplete(tabId) {
+  const tab = await chrome.tabs.get(tabId).catch(() => undefined);
+  if (tab?.status === 'complete') {
+    return;
+  }
+
+  await new Promise((resolve) => {
     const listener = (updatedTabId, changeInfo) => {
       if (updatedTabId === tabId && changeInfo.status === 'complete') {
         chrome.tabs.onUpdated.removeListener(listener);
@@ -210,12 +234,16 @@ async function saveRunHistory(run) {
 async function downloadCsv(prefix, date, records) {
   const csv = toCsv(records);
   const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
-  await chrome.downloads.download({
-    url,
-    filename: `${prefix}-${date}.csv`,
-    conflictAction: 'uniquify',
-    saveAs: false
-  });
+  try {
+    await chrome.downloads.download({
+      url,
+      filename: `${sanitizeFilename(prefix) || DEFAULT_SETTINGS.outputPrefix}-${date}.csv`,
+      conflictAction: 'uniquify',
+      saveAs: false
+    });
+  } finally {
+    URL.revokeObjectURL(url);
+  }
 }
 
 function toCsv(records) {
@@ -239,4 +267,16 @@ function escapeCsv(value) {
 
 function formatDate(date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+
+function clampNumber(value, min, max, fallback) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) {
+    return fallback;
+  }
+  return Math.min(max, Math.max(min, number));
+}
+
+function sanitizeFilename(value) {
+  return String(value || '').trim().replace(/[\\/:*?"<>|]+/g, '-');
 }
