@@ -112,10 +112,10 @@ async function applyPickedSelector(payload) {
 
 async function saveOptions() {
   const settings = {
-    runHour: Number(document.querySelector('#runHour').value || 17),
-    runMinute: Number(document.querySelector('#runMinute').value || 0),
-    outputPrefix: document.querySelector('#outputPrefix').value || 'alibaba-daily-stats',
-    waitAfterLoadMs: Number(document.querySelector('#waitAfterLoadMs').value || 8000),
+    runHour: clampNumber(document.querySelector('#runHour').value, 0, 23, 17),
+    runMinute: clampNumber(document.querySelector('#runMinute').value, 0, 59, 0),
+    outputPrefix: sanitizeFilename(document.querySelector('#outputPrefix').value) || 'alibaba-daily-stats',
+    waitAfterLoadMs: clampNumber(document.querySelector('#waitAfterLoadMs').value, 1000, 120000, 8000),
     shops: [...document.querySelectorAll('.shop')].map((section) => ({
       name: section.querySelector('.shop-name').value.trim(),
       url: section.querySelector('.shop-url').value.trim(),
@@ -137,4 +137,16 @@ function escapeHtml(value) {
     '>': '&gt;',
     '"': '&quot;'
   }[char]));
+}
+
+function clampNumber(value, min, max, fallback) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) {
+    return fallback;
+  }
+  return Math.min(max, Math.max(min, Math.trunc(number)));
+}
+
+function sanitizeFilename(value) {
+  return String(value || '').trim().replace(/[\\/:*?"<>|]+/g, '-');
 }

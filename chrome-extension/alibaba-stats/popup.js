@@ -7,7 +7,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 document.querySelector('#runNow').addEventListener('click', async () => {
   const status = document.querySelector('#status');
+  const button = document.querySelector('#runNow');
   status.textContent = '正在采集...';
-  const response = await chrome.runtime.sendMessage({ type: 'RUN_NOW' });
-  status.textContent = JSON.stringify(response, null, 2);
+  button.disabled = true;
+
+  try {
+    const response = await chrome.runtime.sendMessage({ type: 'RUN_NOW' });
+    status.textContent = JSON.stringify(response, null, 2);
+  } catch (error) {
+    status.textContent = `采集失败：${error.message}`;
+  } finally {
+    button.disabled = false;
+  }
 });
