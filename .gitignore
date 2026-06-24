@@ -1,8 +1,13 @@
-venv/
-__pycache__/
-.env
-instance/
-*.pyc
-*.sqlite3
-*.db
+# OS / editor files
 .DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Extension build artifacts
+*.zip
+*.crx
+
+# Logs and temporary files
+*.log
+*.tmp
