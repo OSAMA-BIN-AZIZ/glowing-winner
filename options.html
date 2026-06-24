@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <title>Alibaba Stats 设置</title>
+    <style>
+      body { font-family: Arial, sans-serif; margin: 24px; max-width: 980px; }
+      label { display: block; margin: 12px 0 4px; font-weight: 600; }
+      input, select { width: 100%; box-sizing: border-box; padding: 8px; }
+      .row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+      .shop { border: 1px solid #ddd; border-radius: 8px; padding: 16px; margin: 16px 0; }
+      button { margin-top: 16px; padding: 10px 16px; cursor: pointer; }
+      .selector-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: end; }
+      .selector-row button { margin-top: 0; white-space: nowrap; }
+      .hint { color: #666; font-size: 13px; }
+      #status { margin-left: 12px; color: #0a7f24; }
+    </style>
+  </head>
+  <body>
+    <h1>Alibaba Stats 设置</h1>
+    <p class="hint">填写三个店铺的数据页面 URL，然后点击“点选询盘数/点选 TM 数”，在打开的页面上直接点击对应数字，插件会自动保存选择器。插件会每天下午 5 点自动打开页面，并默认写入配置的 WPS 云文档在线表格。</p>
+
+    <div class="row">
+      <div>
+        <label for="runHour">执行小时</label>
+        <input id="runHour" type="number" min="0" max="23">
+      </div>
+      <div>
+        <label for="runMinute">执行分钟</label>
+        <input id="runMinute" type="number" min="0" max="59">
+      </div>
+    </div>
+
+    <label for="outputTarget">输出方式</label>
+    <select id="outputTarget">
+      <option value="wps">写入 WPS 云文档在线表格</option>
+      <option value="csv">仅下载 CSV 备份</option>
+    </select>
+
+    <label for="outputPrefix">CSV 备份文件名前缀</label>
+    <input id="outputPrefix" type="text">
+
+    <section class="shop">
+      <h2>WPS 云文档写入配置</h2>
+      <p class="hint">使用金山文档开放平台在线表格接口：填写 access_token、表格 file_token、sheet 序号和写入起始位置。行列均从 0 开始计数；如果要从 A2 开始写入，请填写起始行 1、起始列 0。</p>
+      <label for="wpsAccessToken">WPS access_token</label>
+      <input id="wpsAccessToken" type="password" autocomplete="off" placeholder="开放平台 access_token">
+      <label for="wpsFileToken">WPS 表格 file_token</label>
+      <input id="wpsFileToken" type="text" placeholder="云文档在线表格 file_token">
+      <div class="row">
+        <div>
+          <label for="wpsSheetIndex">Sheet 序号</label>
+          <input id="wpsSheetIndex" type="number" min="0" value="0">
+        </div>
+        <div>
+          <label for="wpsStartRow">起始行</label>
+          <input id="wpsStartRow" type="number" min="0" value="1">
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label for="wpsStartColumn">起始列</label>
+          <input id="wpsStartColumn" type="number" min="0" value="0">
+        </div>
+        <div>
+          <label for="wpsIncludeHeader">表头</label>
+          <select id="wpsIncludeHeader">
+            <option value="true">写入表头</option>
+            <option value="false">不写表头</option>
+          </select>
+        </div>
+      </div>
+      <label for="wpsDownloadCsvBackup">CSV 备份</label>
+      <select id="wpsDownloadCsvBackup">
+        <option value="false">写入 WPS 后不下载 CSV</option>
+        <option value="true">写入 WPS 后同时下载 CSV</option>
+      </select>
+    </section>
+
+    <label for="waitAfterLoadMs">页面加载后等待毫秒数</label>
+    <input id="waitAfterLoadMs" type="number" min="1000" step="1000">
+
+    <div id="shops"></div>
+
+    <button id="save">保存设置</button>
+    <span id="status"></span>
+
+    <script src="options.js"></script>
+  </body>
+</html>
