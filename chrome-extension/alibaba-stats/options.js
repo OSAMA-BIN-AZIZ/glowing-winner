@@ -12,15 +12,26 @@ async function restoreOptions() {
   const current = settings || {
     runHour: 17,
     runMinute: 0,
+    outputTarget: 'wps',
     outputPrefix: 'alibaba-daily-stats',
     waitAfterLoadMs: 8000,
+    wps: {},
     shops: []
   };
 
   document.querySelector('#runHour').value = current.runHour ?? 17;
   document.querySelector('#runMinute').value = current.runMinute ?? 0;
+  const wps = current.wps || {};
+  document.querySelector('#outputTarget').value = current.outputTarget || (wps.enabled ? 'wps' : 'wps');
   document.querySelector('#outputPrefix').value = current.outputPrefix || 'alibaba-daily-stats';
   document.querySelector('#waitAfterLoadMs').value = current.waitAfterLoadMs || 8000;
+  document.querySelector('#wpsAccessToken').value = wps.accessToken || '';
+  document.querySelector('#wpsFileToken').value = wps.fileToken || '';
+  document.querySelector('#wpsSheetIndex').value = wps.sheetIndex ?? 0;
+  document.querySelector('#wpsStartRow').value = wps.startRow ?? 1;
+  document.querySelector('#wpsStartColumn').value = wps.startColumn ?? 0;
+  document.querySelector('#wpsIncludeHeader').value = String(wps.includeHeader ?? true);
+  document.querySelector('#wpsDownloadCsvBackup').value = String(wps.downloadCsvBackup ?? false);
 
   const shops = [...(current.shops || [])];
   while (shops.length < DEFAULT_SHOP_COUNT) {
@@ -114,8 +125,19 @@ async function saveOptions() {
   const settings = {
     runHour: clampNumber(document.querySelector('#runHour').value, 0, 23, 17),
     runMinute: clampNumber(document.querySelector('#runMinute').value, 0, 59, 0),
+    outputTarget: document.querySelector('#outputTarget').value,
     outputPrefix: sanitizeFilename(document.querySelector('#outputPrefix').value) || 'alibaba-daily-stats',
     waitAfterLoadMs: clampNumber(document.querySelector('#waitAfterLoadMs').value, 1000, 120000, 8000),
+    wps: {
+      enabled: document.querySelector('#outputTarget').value === 'wps',
+      accessToken: document.querySelector('#wpsAccessToken').value.trim(),
+      fileToken: document.querySelector('#wpsFileToken').value.trim(),
+      sheetIndex: clampNumber(document.querySelector('#wpsSheetIndex').value, 0, 1000, 0),
+      startRow: clampNumber(document.querySelector('#wpsStartRow').value, 0, 1000000, 1),
+      startColumn: clampNumber(document.querySelector('#wpsStartColumn').value, 0, 16383, 0),
+      includeHeader: document.querySelector('#wpsIncludeHeader').value === 'true',
+      downloadCsvBackup: document.querySelector('#wpsDownloadCsvBackup').value === 'true'
+    },
     shops: [...document.querySelectorAll('.shop')].map((section) => ({
       name: section.querySelector('.shop-name').value.trim(),
       url: section.querySelector('.shop-url').value.trim(),
