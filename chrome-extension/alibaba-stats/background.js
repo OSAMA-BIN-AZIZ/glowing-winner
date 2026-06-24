@@ -101,6 +101,7 @@ async function openSelectorPicker(payload) {
   });
 }
 
+
 async function getSettings() {
   const { settings } = await chrome.storage.sync.get('settings');
   return normalizeSettings(settings);
