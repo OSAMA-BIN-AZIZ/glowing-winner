@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <title>Alibaba Stats 设置</title>
+    <style>
+      body { font-family: Arial, sans-serif; margin: 24px; max-width: 980px; }
+      label { display: block; margin: 12px 0 4px; font-weight: 600; }
+      input { width: 100%; box-sizing: border-box; padding: 8px; }
+      .row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+      .shop { border: 1px solid #ddd; border-radius: 8px; padding: 16px; margin: 16px 0; }
+      button { margin-top: 16px; padding: 10px 16px; cursor: pointer; }
+      .selector-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: end; }
+      .selector-row button { margin-top: 0; white-space: nowrap; }
+      .hint { color: #666; font-size: 13px; }
+      #status { margin-left: 12px; color: #0a7f24; }
+    </style>
+  </head>
+  <body>
+    <h1>Alibaba Stats 设置</h1>
+    <p class="hint">填写三个店铺的数据页面 URL，然后点击“点选询盘数/点选 TM 数”，在打开的页面上直接点击对应数字，插件会自动保存选择器。插件会每天下午 5 点自动打开页面并下载 CSV 到本地下载目录。</p>
+
+    <div class="row">
+      <div>
+        <label for="runHour">执行小时</label>
+        <input id="runHour" type="number" min="0" max="23">
+      </div>
+      <div>
+        <label for="runMinute">执行分钟</label>
+        <input id="runMinute" type="number" min="0" max="59">
+      </div>
+    </div>
+
+    <label for="outputPrefix">下载文件名前缀</label>
+    <input id="outputPrefix" type="text">
+
+    <label for="waitAfterLoadMs">页面加载后等待毫秒数</label>
+    <input id="waitAfterLoadMs" type="number" min="1000" step="1000">
+
+    <div id="shops"></div>
+
+    <button id="save">保存设置</button>
+    <span id="status"></span>
+
+    <script src="options.js"></script>
+  </body>
+</html>

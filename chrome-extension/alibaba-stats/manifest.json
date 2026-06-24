@@ -1,0 +1,20 @@
+{
+  "manifest_version": 3,
+  "name": "Alibaba Daily Stats Exporter",
+  "description": "每天下午 5 点打开配置的阿里巴巴国际站店铺页面，提取询盘/TM 数据并下载本地 CSV 表格。",
+  "version": "0.1.0",
+  "permissions": ["alarms", "downloads", "storage", "tabs", "scripting"],
+  "host_permissions": [
+    "https://*.alibaba.com/*",
+    "https://*.alibaba-inc.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "options_page": "options.html",
+  "action": {
+    "default_title": "Alibaba Stats",
+    "default_popup": "popup.html"
+  }
+}

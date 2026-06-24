@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <title>Alibaba Stats</title>
+    <style>
+      body { font-family: Arial, sans-serif; min-width: 320px; padding: 14px; }
+      button { width: 100%; padding: 10px; cursor: pointer; }
+      .muted { color: #666; font-size: 12px; }
+      pre { white-space: pre-wrap; background: #f6f6f6; padding: 8px; max-height: 180px; overflow: auto; }
+    </style>
+  </head>
+  <body>
+    <h1>Alibaba Stats</h1>
+    <p class="muted" id="nextRun">读取下次运行时间...</p>
+    <button id="runNow">立即采集并下载 CSV</button>
+    <p><a href="options.html" target="_blank">打开设置</a></p>
+    <pre id="status"></pre>
+    <script src="popup.js"></script>
+  </body>
+</html>
